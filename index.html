@@ -236,7 +236,7 @@
 
         <div id="game-area">
             <div class="color-display" id="colorDisplay"></div>
-            <div class="color-name" id="colorName">請選擇正確的顏色</div>
+            <div class="color-name" id="colorName">選擇相同的顏色</div>
             
             <div class="options" id="options">
                 <button class="option" onclick="selectOption(0)"></button>
@@ -395,14 +395,14 @@
                     const otherColors = currentColors.filter(color => color !== targetColor);
                     const shuffledOthers = shuffleArray(otherColors).slice(0, 3);
                     allOptions = shuffleArray([targetColor, ...shuffledOthers]);
-                    questionText = '這是什麼顏色的深淺變化？';
+                    questionText = '選擇相同的顏色：';
                 }
             } else {
                 targetColor = getRandomColor();
                 const otherColors = currentColors.filter(color => color !== targetColor);
                 const shuffledOthers = shuffleArray(otherColors).slice(0, 3);
                 allOptions = shuffleArray([targetColor, ...shuffledOthers]);
-                questionText = difficulty === 'medium' ? '選擇正確的顏色名稱：' : '這是什麼顏色？';
+                questionText = difficulty === 'medium' ? '選擇相同的顏色：' : '選擇相同的顏色：';
             }
             
             correctAnswer = allOptions.indexOf(targetColor);
@@ -414,12 +414,7 @@
             optionButtons.forEach((button, index) => {
                 button.className = 'option';
                 button.disabled = false;
-                
-                if (isColorMixQuestion) {
-                    button.innerHTML = `<div class="color-option" style="background-color: ${allOptions[index].hex}"></div>`;
-                } else {
-                    button.textContent = allOptions[index].name;
-                }
+                button.innerHTML = `<div class="color-option" style="background-color: ${allOptions[index].hex}"></div>`;
             });
             
             document.getElementById('nextBtn').disabled = true;
