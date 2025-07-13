@@ -298,12 +298,22 @@
             { name: '亮黃色', hex: '#FFFF99' }
         ];
 
-        const colorMixQuestions = [
-            { color1Hex: '#FF0000', color2Hex: '#FFFF00', result: '橙色', resultHex: '#FFA500' },
-            { color1Hex: '#0000FF', color2Hex: '#FFFF00', result: '綠色', resultHex: '#00FF00' },
-            { color1Hex: '#FF0000', color2Hex: '#0000FF', result: '紫色', resultHex: '#800080' },
-            { color1Hex: '#FFFFFF', color2Hex: '#000000', result: '灰色', resultHex: '#808080' },
-            { color1Hex: '#FF0000', color2Hex: '#FFFFFF', result: '粉紅色', resultHex: '#FFC0CB' }
+        const allColorMixQuestions = [
+            { color1Hex: '#FF0000', color2Hex: '#FFFF00', resultHex: '#FFA500' },
+            { color1Hex: '#0000FF', color2Hex: '#FFFF00', resultHex: '#00FF00' },
+            { color1Hex: '#FF0000', color2Hex: '#0000FF', resultHex: '#800080' },
+            { color1Hex: '#FFFFFF', color2Hex: '#000000', resultHex: '#808080' },
+            { color1Hex: '#FF0000', color2Hex: '#FFFFFF', resultHex: '#FFC0CB' },
+            { color1Hex: '#00FF00', color2Hex: '#0000FF', resultHex: '#008080' },
+            { color1Hex: '#FF0000', color2Hex: '#00FF00', resultHex: '#808000' },
+            { color1Hex: '#FFFF00', color2Hex: '#FF00FF', resultHex: '#FF8080' },
+            { color1Hex: '#00FFFF', color2Hex: '#FF0000', resultHex: '#FF8080' },
+            { color1Hex: '#FFA500', color2Hex: '#800080', resultHex: '#B05A5A' },
+            { color1Hex: '#FFB6C1', color2Hex: '#98FB98', resultHex: '#D7D7AA' },
+            { color1Hex: '#87CEEB', color2Hex: '#F0E68C', resultHex: '#BBD7BB' },
+            { color1Hex: '#DDA0DD', color2Hex: '#F5DEB3', resultHex: '#E6C2C8' },
+            { color1Hex: '#20B2AA', color2Hex: '#FFE4B5', resultHex: '#8FCBD7' },
+            { color1Hex: '#8A2BE2', color2Hex: '#7FFFD4', resultHex: '#B4B5DB' }
         ];
 
         let currentQuestion = 1;
@@ -394,37 +404,30 @@
         function generateQuestion() {
             if (timer) clearInterval(timer);
             
-            let targetColor, questionText, allOptions, isColorMixQuestion = false;
+            const mixQuestion = allColorMixQuestions[Math.floor(Math.random() * allColorMixQuestions.length)];
+            const targetColor = { name: 'result', hex: mixQuestion.resultHex };
             
-            if (difficulty === 'hard') {
-                const questionType = Math.random() < 0.5 ? 'shade' : 'mix';
-                
-                if (questionType === 'mix') {
-                    const mixQuestion = colorMixQuestions[Math.floor(Math.random() * colorMixQuestions.length)];
-                    targetColor = { name: mixQuestion.result, hex: mixQuestion.resultHex };
-                    
-                    const otherResults = colorMixQuestions
-                        .filter(q => q.result !== mixQuestion.result)
-                        .map(q => ({ name: q.result, hex: q.resultHex }))
-                        .slice(0, 3);
-                    
-                    allOptions = shuffleArray([targetColor, ...otherResults]);
-                    questionText = `<div style="display: inline-flex; align-items: center; gap: 10px;"><div style="width: 30px; height: 30px; background: ${mixQuestion.color1Hex}; border: 2px solid white; border-radius: 5px;"></div> + <div style="width: 30px; height: 30px; background: ${mixQuestion.color2Hex}; border: 2px solid white; border-radius: 5px;"></div> = ?</div>`;
-                    isColorMixQuestion = true;
-                } else {
-                    targetColor = getRandomColor();
-                    const similarColors = generateSimilarColors(targetColor.hex, 3);
-                    allOptions = shuffleArray([targetColor, ...similarColors]);
-                    questionText = '選擇相同的顏色：';
-                }
+            let similarColors;
+            if (difficulty === 'easy') {
+                const otherMixResults = allColorMixQuestions
+                    .filter(q => q.resultHex !== mixQuestion.resultHex)
+                    .map(q => ({ name: 'other', hex: q.resultHex }))
+                    .slice(0, 3);
+                similarColors = otherMixResults;
             } else {
-                targetColor = getRandomColor();
-                const similarColors = generateSimilarColors(targetColor.hex, 3);
-                allOptions = shuffleArray([targetColor, ...similarColors]);
-                questionText = '選擇相同的顏色：';
+                similarColors = generateSimilarColors(targetColor.hex, 3);
             }
             
+            const allOptions = shuffleArray([targetColor, ...similarColors]);
             correctAnswer = allOptions.indexOf(targetColor);
+            
+            const questionText = `<div style="display: inline-flex; align-items: center; gap: 10px; font-size: 1.5em;">
+                <div style="width: 40px; height: 40px; background: ${mixQuestion.color1Hex}; border: 3px solid white; border-radius: 8px;"></div> 
+                <span style="font-weight: bold; color: white;">+</span> 
+                <div style="width: 40px; height: 40px; background: ${mixQuestion.color2Hex}; border: 3px solid white; border-radius: 8px;"></div> 
+                <span style="font-weight: bold; color: white;">=</span>
+                <span style="font-weight: bold; color: white; font-size: 1.2em;">?</span>
+            </div>`;
             
             document.getElementById('colorName').innerHTML = questionText;
             
