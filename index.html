@@ -499,11 +499,21 @@
 
         function updateVisitorCount() {
             let count = localStorage.getItem('visitorCount');
+            let lastVisit = localStorage.getItem('lastVisitDate');
+            let today = new Date().toDateString();
+            
             if (!count) {
                 count = 0;
+            } else {
+                count = parseInt(count);
             }
-            count = parseInt(count) + 1;
-            localStorage.setItem('visitorCount', count);
+            
+            if (lastVisit !== today) {
+                count = count + 1;
+                localStorage.setItem('visitorCount', count);
+                localStorage.setItem('lastVisitDate', today);
+            }
+            
             document.getElementById('visitorCount').textContent = count;
         }
 
