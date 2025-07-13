@@ -127,6 +127,29 @@
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: bold;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .color-option {
+            width: 80px;
+            height: 40px;
+            border-radius: 8px;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .visitor-counter {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
         }
 
         .option:hover {
@@ -230,6 +253,10 @@
             <p>你的最終得分：<span id="finalScore">0</span>/10</p>
             <button class="restart-btn" onclick="restartGame()">重新開始</button>
         </div>
+    </div>
+
+    <div class="visitor-counter">
+        訪客人次: <span id="visitorCount">1</span>
     </div>
 
     <script>
@@ -346,7 +373,7 @@
         function generateQuestion() {
             if (timer) clearInterval(timer);
             
-            let targetColor, questionText, allOptions;
+            let targetColor, questionText, allOptions, isColorMixQuestion = false;
             
             if (difficulty === 'hard') {
                 const questionType = Math.random() < 0.5 ? 'shade' : 'mix';
@@ -362,6 +389,7 @@
                     
                     allOptions = shuffleArray([targetColor, ...otherResults]);
                     questionText = `${mixQuestion.color1} + ${mixQuestion.color2} = ?`;
+                    isColorMixQuestion = true;
                 } else {
                     targetColor = getRandomColor();
                     const otherColors = currentColors.filter(color => color !== targetColor);
@@ -384,9 +412,14 @@
             
             const optionButtons = document.querySelectorAll('.option');
             optionButtons.forEach((button, index) => {
-                button.textContent = allOptions[index].name;
                 button.className = 'option';
                 button.disabled = false;
+                
+                if (isColorMixQuestion) {
+                    button.innerHTML = `<div class="color-option" style="background-color: ${allOptions[index].hex}"></div>`;
+                } else {
+                    button.textContent = allOptions[index].name;
+                }
             });
             
             document.getElementById('nextBtn').disabled = true;
@@ -448,6 +481,17 @@
             generateQuestion();
         }
 
+        function updateVisitorCount() {
+            let count = localStorage.getItem('visitorCount');
+            if (!count) {
+                count = 0;
+            }
+            count = parseInt(count) + 1;
+            localStorage.setItem('visitorCount', count);
+            document.getElementById('visitorCount').textContent = count;
+        }
+
+        updateVisitorCount();
         generateQuestion();
     </script>
 </body>
