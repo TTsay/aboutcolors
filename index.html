@@ -211,6 +211,42 @@
             transform: scale(1.05);
             background: #45a049;
         }
+
+        .show-codes-btn {
+            padding: 8px 16px;
+            font-size: 0.9em;
+            border: 2px solid white;
+            border-radius: 20px;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 0;
+        }
+
+        .show-codes-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .show-codes-btn.active {
+            background: white;
+            color: #333;
+        }
+
+        .color-code {
+            font-size: 0.7em;
+            color: #333;
+            margin-top: 5px;
+            font-weight: normal;
+            display: none;
+        }
+
+        .question-codes {
+            font-size: 0.8em;
+            color: white;
+            margin-top: 10px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -236,6 +272,9 @@
 
         <div id="game-area">
             <div class="color-name" id="colorName">選擇相同的顏色</div>
+            <div class="question-codes" id="questionCodes"></div>
+            
+            <button class="show-codes-btn" id="showCodesBtn" onclick="toggleColorCodes()">顯示色碼</button>
             
             <div class="options" id="options">
                 <button class="option" onclick="selectOption(0)"></button>
@@ -324,6 +363,9 @@
         let timeLeft = 10;
         let timer = null;
         let currentColors = easyColors;
+        let showCodes = false;
+        let currentMixQuestion = null;
+        let currentOptions = [];
 
         function setDifficulty(level) {
             difficulty = level;
@@ -405,6 +447,7 @@
             if (timer) clearInterval(timer);
             
             const mixQuestion = allColorMixQuestions[Math.floor(Math.random() * allColorMixQuestions.length)];
+            currentMixQuestion = mixQuestion;
             const targetColor = { name: 'result', hex: mixQuestion.resultHex };
             
             let similarColors;
@@ -419,6 +462,7 @@
             }
             
             const allOptions = shuffleArray([targetColor, ...similarColors]);
+            currentOptions = allOptions;
             correctAnswer = allOptions.indexOf(targetColor);
             
             const questionText = `<div style="display: inline-flex; align-items: center; gap: 10px; font-size: 1.5em;">
@@ -435,13 +479,48 @@
             optionButtons.forEach((button, index) => {
                 button.className = 'option';
                 button.disabled = false;
-                button.innerHTML = `<div class="color-option" style="background-color: ${allOptions[index].hex}"></div>`;
+                button.innerHTML = `<div class="color-option" style="background-color: ${allOptions[index].hex}"></div><div class="color-code">${allOptions[index].hex}</div>`;
             });
             
+            updateColorCodeDisplay();
             document.getElementById('nextBtn').disabled = true;
             answered = false;
             
             startTimer();
+        }
+
+        function toggleColorCodes() {
+            showCodes = !showCodes;
+            const btn = document.getElementById('showCodesBtn');
+            
+            if (showCodes) {
+                btn.textContent = '隱藏色碼';
+                btn.classList.add('active');
+            } else {
+                btn.textContent = '顯示色碼';
+                btn.classList.remove('active');
+            }
+            
+            updateColorCodeDisplay();
+        }
+
+        function updateColorCodeDisplay() {
+            const questionCodes = document.getElementById('questionCodes');
+            const colorCodes = document.querySelectorAll('.color-code');
+            
+            if (showCodes && currentMixQuestion) {
+                questionCodes.innerHTML = `題目色碼: ${currentMixQuestion.color1Hex} + ${currentMixQuestion.color2Hex} = ${currentMixQuestion.resultHex}`;
+                questionCodes.style.display = 'block';
+                
+                colorCodes.forEach(code => {
+                    code.style.display = 'block';
+                });
+            } else {
+                questionCodes.style.display = 'none';
+                colorCodes.forEach(code => {
+                    code.style.display = 'none';
+                });
+            }
         }
 
         function selectOption(selectedIndex) {
