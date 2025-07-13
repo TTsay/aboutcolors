@@ -235,7 +235,6 @@
         </div>
 
         <div id="game-area">
-            <div class="color-display" id="colorDisplay"></div>
             <div class="color-name" id="colorName">選擇相同的顏色</div>
             
             <div class="options" id="options">
@@ -300,11 +299,11 @@
         ];
 
         const colorMixQuestions = [
-            { color1: '紅色', color2: '黃色', result: '橙色', resultHex: '#FFA500' },
-            { color1: '藍色', color2: '黃色', result: '綠色', resultHex: '#00FF00' },
-            { color1: '紅色', color2: '藍色', result: '紫色', resultHex: '#800080' },
-            { color1: '白色', color2: '黑色', result: '灰色', resultHex: '#808080' },
-            { color1: '紅色', color2: '白色', result: '粉紅色', resultHex: '#FFC0CB' }
+            { color1Hex: '#FF0000', color2Hex: '#FFFF00', result: '橙色', resultHex: '#FFA500' },
+            { color1Hex: '#0000FF', color2Hex: '#FFFF00', result: '綠色', resultHex: '#00FF00' },
+            { color1Hex: '#FF0000', color2Hex: '#0000FF', result: '紫色', resultHex: '#800080' },
+            { color1Hex: '#FFFFFF', color2Hex: '#000000', result: '灰色', resultHex: '#808080' },
+            { color1Hex: '#FF0000', color2Hex: '#FFFFFF', result: '粉紅色', resultHex: '#FFC0CB' }
         ];
 
         let currentQuestion = 1;
@@ -388,7 +387,7 @@
                         .slice(0, 3);
                     
                     allOptions = shuffleArray([targetColor, ...otherResults]);
-                    questionText = `${mixQuestion.color1} + ${mixQuestion.color2} = ?`;
+                    questionText = `<div style="display: inline-flex; align-items: center; gap: 10px;"><div style="width: 30px; height: 30px; background: ${mixQuestion.color1Hex}; border: 2px solid white; border-radius: 5px;"></div> + <div style="width: 30px; height: 30px; background: ${mixQuestion.color2Hex}; border: 2px solid white; border-radius: 5px;"></div> = ?</div>`;
                     isColorMixQuestion = true;
                 } else {
                     targetColor = getRandomColor();
@@ -407,8 +406,7 @@
             
             correctAnswer = allOptions.indexOf(targetColor);
             
-            document.getElementById('colorDisplay').style.backgroundColor = targetColor.hex;
-            document.getElementById('colorName').textContent = questionText;
+            document.getElementById('colorName').innerHTML = questionText;
             
             const optionButtons = document.querySelectorAll('.option');
             optionButtons.forEach((button, index) => {
