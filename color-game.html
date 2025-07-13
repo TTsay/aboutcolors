@@ -260,16 +260,24 @@
         ];
 
         const hardColors = [
-            { name: '#FF6B35', hex: '#FF6B35' },
-            { name: '#4ECDC4', hex: '#4ECDC4' },
-            { name: '#45B7D1', hex: '#45B7D1' },
-            { name: '#96CEB4', hex: '#96CEB4' },
-            { name: '#FFEAA7', hex: '#FFEAA7' },
-            { name: '#DDA0DD', hex: '#DDA0DD' },
-            { name: '#98D8C8', hex: '#98D8C8' },
-            { name: '#F7DC6F', hex: '#F7DC6F' },
-            { name: '#BB8FCE', hex: '#BB8FCE' },
-            { name: '#85C1E9', hex: '#85C1E9' }
+            { name: '暗紅色', hex: '#8B0000' },
+            { name: '亮紅色', hex: '#FF6B6B' },
+            { name: '深藍色', hex: '#000080' },
+            { name: '淺藍色', hex: '#ADD8E6' },
+            { name: '墨綠色', hex: '#006400' },
+            { name: '淺綠色', hex: '#90EE90' },
+            { name: '深紫色', hex: '#4B0082' },
+            { name: '淺紫色', hex: '#DDA0DD' },
+            { name: '暗黃色', hex: '#B8860B' },
+            { name: '亮黃色', hex: '#FFFF99' }
+        ];
+
+        const colorMixQuestions = [
+            { color1: '紅色', color2: '黃色', result: '橙色', resultHex: '#FFA500' },
+            { color1: '藍色', color2: '黃色', result: '綠色', resultHex: '#00FF00' },
+            { color1: '紅色', color2: '藍色', result: '紫色', resultHex: '#800080' },
+            { color1: '白色', color2: '黑色', result: '灰色', resultHex: '#808080' },
+            { color1: '紅色', color2: '白色', result: '粉紅色', resultHex: '#FFC0CB' }
         ];
 
         let currentQuestion = 1;
@@ -335,26 +343,32 @@
             return newArray;
         }
 
-        function generateRandomHex() {
-            return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0').toUpperCase();
-        }
-
         function generateQuestion() {
             if (timer) clearInterval(timer);
             
             let targetColor, questionText, allOptions;
             
             if (difficulty === 'hard') {
-                const randomHex = generateRandomHex();
-                targetColor = { name: randomHex, hex: randomHex };
+                const questionType = Math.random() < 0.5 ? 'shade' : 'mix';
                 
-                const otherHexes = [];
-                for (let i = 0; i < 3; i++) {
-                    otherHexes.push({ name: generateRandomHex(), hex: generateRandomHex() });
+                if (questionType === 'mix') {
+                    const mixQuestion = colorMixQuestions[Math.floor(Math.random() * colorMixQuestions.length)];
+                    targetColor = { name: mixQuestion.result, hex: mixQuestion.resultHex };
+                    
+                    const otherResults = colorMixQuestions
+                        .filter(q => q.result !== mixQuestion.result)
+                        .map(q => ({ name: q.result, hex: q.resultHex }))
+                        .slice(0, 3);
+                    
+                    allOptions = shuffleArray([targetColor, ...otherResults]);
+                    questionText = `${mixQuestion.color1} + ${mixQuestion.color2} = ?`;
+                } else {
+                    targetColor = getRandomColor();
+                    const otherColors = currentColors.filter(color => color !== targetColor);
+                    const shuffledOthers = shuffleArray(otherColors).slice(0, 3);
+                    allOptions = shuffleArray([targetColor, ...shuffledOthers]);
+                    questionText = '這是什麼顏色的深淺變化？';
                 }
-                
-                allOptions = shuffleArray([targetColor, ...otherHexes]);
-                questionText = '選擇正確的 HEX 顏色代碼：';
             } else {
                 targetColor = getRandomColor();
                 const otherColors = currentColors.filter(color => color !== targetColor);
