@@ -427,35 +427,51 @@
             const g = parseInt(targetHex.substr(3, 2), 16);
             const b = parseInt(targetHex.substr(5, 2), 16);
             
-            // 增加變化量以提高顏色區別度
-            let baseVariation = difficulty === 'easy' ? 60 : difficulty === 'medium' ? 45 : 30;
+            // 大幅增加變化量，確保顏色有明顯區別
+            let baseVariation = difficulty === 'easy' ? 80 : difficulty === 'medium' ? 70 : 60;
+            
+            // 預定義不同的變化方向，確保選項有更大差異
+            const changeDirections = [
+                { rDir: 1, gDir: -1, bDir: 0 },   // 增加紅，減少綠
+                { rDir: -1, gDir: 1, bDir: 0 },   // 減少紅，增加綠
+                { rDir: 0, gDir: -1, bDir: 1 },   // 減少綠，增加藍
+                { rDir: 1, gDir: 0, bDir: -1 },   // 增加紅，減少藍
+                { rDir: -1, gDir: 0, bDir: 1 },   // 減少紅，增加藍
+                { rDir: 0, gDir: 1, bDir: -1 }    // 增加綠，減少藍
+            ];
             
             for (let i = 0; i < count; i++) {
                 let attempts = 0;
                 let newHex, newR, newG, newB;
                 
-                // 嘗試生成與已有顏色足夠不同的顏色
                 do {
-                    // 為每個選項使用不同的變化策略
-                    let variation = baseVariation + (i * 15); // 每個選項遞增變化量
+                    // 使用預定義方向和隨機強度來生成差異較大的顏色
+                    const direction = changeDirections[i % changeDirections.length];
+                    let variation = baseVariation + (i * 20); // 每個選項遞增更多變化量
                     
-                    // 使用更大的變化範圍，並確保至少有一個通道有較大變化
-                    const majorChange = Math.random() < 0.7; // 70%機率有主要變化
+                    // 使用方向性變化，確保顏色有明顯差異
+                    const rChange = direction.rDir * (Math.random() * variation + variation * 0.5);
+                    const gChange = direction.gDir * (Math.random() * variation + variation * 0.5);
+                    const bChange = direction.bDir * (Math.random() * variation + variation * 0.5);
                     
-                    if (majorChange) {
-                        // 主要變化：隨機選擇1-2個通道進行較大變化
-                        const changeR = Math.random() < 0.6;
-                        const changeG = Math.random() < 0.6;
-                        const changeB = Math.random() < 0.6;
-                        
-                        newR = changeR ? Math.max(0, Math.min(255, r + (Math.random() - 0.5) * variation * 2.5)) : r + (Math.random() - 0.5) * 20;
-                        newG = changeG ? Math.max(0, Math.min(255, g + (Math.random() - 0.5) * variation * 2.5)) : g + (Math.random() - 0.5) * 20;
-                        newB = changeB ? Math.max(0, Math.min(255, b + (Math.random() - 0.5) * variation * 2.5)) : b + (Math.random() - 0.5) * 20;
-                    } else {
-                        // 均勻變化
-                        newR = Math.max(0, Math.min(255, r + (Math.random() - 0.5) * variation * 2));
-                        newG = Math.max(0, Math.min(255, g + (Math.random() - 0.5) * variation * 2));
-                        newB = Math.max(0, Math.min(255, b + (Math.random() - 0.5) * variation * 2));
+                    // 添加一些隨機擾動，但保持主要方向
+                    const randomFactor = 0.3; // 30%的隨機性
+                    newR = Math.max(0, Math.min(255, r + rChange + (Math.random() - 0.5) * variation * randomFactor));
+                    newG = Math.max(0, Math.min(255, g + gChange + (Math.random() - 0.5) * variation * randomFactor));
+                    newB = Math.max(0, Math.min(255, b + bChange + (Math.random() - 0.5) * variation * randomFactor));
+                    
+                    // 確保至少有一個通道有顯著變化
+                    const totalChange = Math.abs(newR - r) + Math.abs(newG - g) + Math.abs(newB - b);
+                    if (totalChange < baseVariation) {
+                        // 如果變化太小，強制增加最大變化的通道
+                        const maxChange = Math.max(Math.abs(newR - r), Math.abs(newG - g), Math.abs(newB - b));
+                        if (Math.abs(newR - r) === maxChange) {
+                            newR = newR > r ? Math.min(255, newR + baseVariation) : Math.max(0, newR - baseVariation);
+                        } else if (Math.abs(newG - g) === maxChange) {
+                            newG = newG > g ? Math.min(255, newG + baseVariation) : Math.max(0, newG - baseVariation);
+                        } else {
+                            newB = newB > b ? Math.min(255, newB + baseVariation) : Math.max(0, newB - baseVariation);
+                        }
                     }
                     
                     newHex = '#' + Math.round(newR).toString(16).padStart(2, '0') + 
@@ -463,15 +479,15 @@
                             Math.round(newB).toString(16).padStart(2, '0');
                     
                     attempts++;
-                } while (attempts < 10 && (
-                    // 檢查是否與目標顏色太相似
-                    (Math.abs(newR - r) + Math.abs(newG - g) + Math.abs(newB - b)) < baseVariation ||
-                    // 檢查是否與已生成的顏色太相似
+                } while (attempts < 15 && (
+                    // 檢查是否與目標顏色太相似 - 提高最小差異要求
+                    (Math.abs(newR - r) + Math.abs(newG - g) + Math.abs(newB - b)) < baseVariation * 0.8 ||
+                    // 檢查是否與已生成的顏色太相似 - 提高最小差異要求
                     colors.some(color => {
                         const existingR = parseInt(color.hex.substr(1, 2), 16);
                         const existingG = parseInt(color.hex.substr(3, 2), 16);
                         const existingB = parseInt(color.hex.substr(5, 2), 16);
-                        return (Math.abs(newR - existingR) + Math.abs(newG - existingG) + Math.abs(newB - existingB)) < 30;
+                        return (Math.abs(newR - existingR) + Math.abs(newG - existingG) + Math.abs(newB - existingB)) < 50;
                     })
                 ));
                 
