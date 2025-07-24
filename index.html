@@ -427,16 +427,53 @@
             const g = parseInt(targetHex.substr(3, 2), 16);
             const b = parseInt(targetHex.substr(5, 2), 16);
             
+            // 增加變化量以提高顏色區別度
+            let baseVariation = difficulty === 'easy' ? 60 : difficulty === 'medium' ? 45 : 30;
+            
             for (let i = 0; i < count; i++) {
-                let variation = difficulty === 'easy' ? 40 : difficulty === 'medium' ? 25 : 15;
+                let attempts = 0;
+                let newHex, newR, newG, newB;
                 
-                const newR = Math.max(0, Math.min(255, r + (Math.random() - 0.5) * variation * 2));
-                const newG = Math.max(0, Math.min(255, g + (Math.random() - 0.5) * variation * 2));
-                const newB = Math.max(0, Math.min(255, b + (Math.random() - 0.5) * variation * 2));
-                
-                const newHex = '#' + Math.round(newR).toString(16).padStart(2, '0') + 
-                              Math.round(newG).toString(16).padStart(2, '0') + 
-                              Math.round(newB).toString(16).padStart(2, '0');
+                // 嘗試生成與已有顏色足夠不同的顏色
+                do {
+                    // 為每個選項使用不同的變化策略
+                    let variation = baseVariation + (i * 15); // 每個選項遞增變化量
+                    
+                    // 使用更大的變化範圍，並確保至少有一個通道有較大變化
+                    const majorChange = Math.random() < 0.7; // 70%機率有主要變化
+                    
+                    if (majorChange) {
+                        // 主要變化：隨機選擇1-2個通道進行較大變化
+                        const changeR = Math.random() < 0.6;
+                        const changeG = Math.random() < 0.6;
+                        const changeB = Math.random() < 0.6;
+                        
+                        newR = changeR ? Math.max(0, Math.min(255, r + (Math.random() - 0.5) * variation * 2.5)) : r + (Math.random() - 0.5) * 20;
+                        newG = changeG ? Math.max(0, Math.min(255, g + (Math.random() - 0.5) * variation * 2.5)) : g + (Math.random() - 0.5) * 20;
+                        newB = changeB ? Math.max(0, Math.min(255, b + (Math.random() - 0.5) * variation * 2.5)) : b + (Math.random() - 0.5) * 20;
+                    } else {
+                        // 均勻變化
+                        newR = Math.max(0, Math.min(255, r + (Math.random() - 0.5) * variation * 2));
+                        newG = Math.max(0, Math.min(255, g + (Math.random() - 0.5) * variation * 2));
+                        newB = Math.max(0, Math.min(255, b + (Math.random() - 0.5) * variation * 2));
+                    }
+                    
+                    newHex = '#' + Math.round(newR).toString(16).padStart(2, '0') + 
+                            Math.round(newG).toString(16).padStart(2, '0') + 
+                            Math.round(newB).toString(16).padStart(2, '0');
+                    
+                    attempts++;
+                } while (attempts < 10 && (
+                    // 檢查是否與目標顏色太相似
+                    (Math.abs(newR - r) + Math.abs(newG - g) + Math.abs(newB - b)) < baseVariation ||
+                    // 檢查是否與已生成的顏色太相似
+                    colors.some(color => {
+                        const existingR = parseInt(color.hex.substr(1, 2), 16);
+                        const existingG = parseInt(color.hex.substr(3, 2), 16);
+                        const existingB = parseInt(color.hex.substr(5, 2), 16);
+                        return (Math.abs(newR - existingR) + Math.abs(newG - existingG) + Math.abs(newB - existingB)) < 30;
+                    })
+                ));
                 
                 colors.push({ name: 'similar', hex: newHex });
             }
