@@ -1,0 +1,12 @@
+{
+  "name": "color-recognition-game",
+  "version": "1.0.0",
+  "description": "顏色辨認遊戲",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "dev": "python3 -m http.server 8080"
+  },
+  "author": "",
+  "license": "MIT"
+}
