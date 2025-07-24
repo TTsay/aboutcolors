@@ -4,6 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>顏色辨認遊戲</title>
+    
+    <script>
+        // 使用PostgreSQL後端記錄訪客人次
+        window.updateVisitorCount = function() {
+            // 呼叫後端API更新計數
+            fetch('/api/visitor-count', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.count !== undefined) {
+                    document.getElementById('visitorCount').textContent = data.count;
+                } else {
+                    throw new Error('無效的回應格式');
+                }
+            })
+            .catch(error => {
+                console.error('PostgreSQL連接失敗:', error);
+                // 備用方案：使用localStorage
+                useLocalStorage();
+            });
+        };
+
+        // 備用的localStorage方案
+        function useLocalStorage() {
+            let count = localStorage.getItem('localVisitCount') || 0;
+            count = parseInt(count) + 1;
+            localStorage.setItem('localVisitCount', count);
+            document.getElementById('visitorCount').textContent = count + ' (本機)';
+        }
+    </script>
+    
     <style>
         * {
             margin: 0;
@@ -637,47 +672,7 @@
             generateQuestion();
         }
 
-        // 使用CountAPI記錄訪客人次
-        function updateVisitorCount() {
-            // 先嘗試創建計數器，如果已存在會返回現有值
-            const namespace = 'color-game-tswnsyau';
-            const key = 'visits';
-            
-            // 先嘗試創建計數器（只在第一次需要）
-            fetch(`https://api.countapi.xyz/create?namespace=${namespace}&key=${key}&value=0`)
-                .then(response => response.json())
-                .then(data => {
-                    // 創建成功或已存在後，執行點擊計數
-                    return fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`);
-                })
-                .catch(() => {
-                    // 如果創建失敗，直接嘗試點擊（可能已存在）
-                    return fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`);
-                })
-                .then(response => {
-                    if (!response) return;
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.value !== undefined) {
-                        document.getElementById('visitorCount').textContent = data.value;
-                    } else {
-                        // 如果CountAPI不可用，使用localStorage作為備用
-                        let count = localStorage.getItem('localVisitCount') || 0;
-                        count = parseInt(count) + 1;
-                        localStorage.setItem('localVisitCount', count);
-                        document.getElementById('visitorCount').textContent = count + ' (本機)';
-                    }
-                })
-                .catch(error => {
-                    console.error('CountAPI連接失敗，使用本機計數:', error);
-                    // 使用localStorage作為備用方案
-                    let count = localStorage.getItem('localVisitCount') || 0;
-                    count = parseInt(count) + 1;
-                    localStorage.setItem('localVisitCount', count);
-                    document.getElementById('visitorCount').textContent = count + ' (本機)';
-                });
-        }
+        // Firebase的updateVisitorCount函數已在頁面頂部定義
 
         updateVisitorCount();
         generateQuestion();
