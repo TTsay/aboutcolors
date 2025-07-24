@@ -639,22 +639,43 @@
 
         // 使用CountAPI記錄訪客人次
         function updateVisitorCount() {
-            // 使用你的專案名稱作為namespace，可以換成你想要的名稱
+            // 先嘗試創建計數器，如果已存在會返回現有值
             const namespace = 'color-game-tswnsyau';
             const key = 'visits';
             
-            fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
+            // 先嘗試創建計數器（只在第一次需要）
+            fetch(`https://api.countapi.xyz/create?namespace=${namespace}&key=${key}&value=0`)
                 .then(response => response.json())
                 .then(data => {
-                    if (data.value) {
+                    // 創建成功或已存在後，執行點擊計數
+                    return fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`);
+                })
+                .catch(() => {
+                    // 如果創建失敗，直接嘗試點擊（可能已存在）
+                    return fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`);
+                })
+                .then(response => {
+                    if (!response) return;
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.value !== undefined) {
                         document.getElementById('visitorCount').textContent = data.value;
                     } else {
-                        document.getElementById('visitorCount').textContent = '無法載入';
+                        // 如果CountAPI不可用，使用localStorage作為備用
+                        let count = localStorage.getItem('localVisitCount') || 0;
+                        count = parseInt(count) + 1;
+                        localStorage.setItem('localVisitCount', count);
+                        document.getElementById('visitorCount').textContent = count + ' (本機)';
                     }
                 })
                 .catch(error => {
-                    console.error('更新訪客計數失敗:', error);
-                    document.getElementById('visitorCount').textContent = '無法載入';
+                    console.error('CountAPI連接失敗，使用本機計數:', error);
+                    // 使用localStorage作為備用方案
+                    let count = localStorage.getItem('localVisitCount') || 0;
+                    count = parseInt(count) + 1;
+                    localStorage.setItem('localVisitCount', count);
+                    document.getElementById('visitorCount').textContent = count + ' (本機)';
                 });
         }
 
