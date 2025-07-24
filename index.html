@@ -287,7 +287,10 @@
             
             <button class="next-btn" id="nextBtn" onclick="nextQuestion()" disabled>下一題</button>
             
-            <div style="text-align: center; margin-top: 15px; color: rgba(255, 255, 255, 0.7); font-size: 12px;">
+            <div style="text-align: center; margin-top: 10px; color: rgba(255, 255, 255, 0.6); font-size: 11px;">
+                累積訪客人次: <span id="visitorCount">載入中...</span>
+            </div>
+            <div style="text-align: center; margin-top: 5px; color: rgba(255, 255, 255, 0.7); font-size: 12px;">
                 © 2025 tswnsyau@gmail.com
             </div>
         </div>
@@ -300,7 +303,6 @@
     </div>
 
     <div class="visitor-counter">
-        訪客人次: <span id="visitorCount">1</span>
     </div>
 
     <script>
@@ -635,24 +637,25 @@
             generateQuestion();
         }
 
+        // 使用CountAPI記錄訪客人次
         function updateVisitorCount() {
-            let count = localStorage.getItem('visitorCount');
-            let lastVisit = localStorage.getItem('lastVisitDate');
-            let today = new Date().toDateString();
+            // 使用你的專案名稱作為namespace，可以換成你想要的名稱
+            const namespace = 'color-game-tswnsyau';
+            const key = 'visits';
             
-            if (!count) {
-                count = 0;
-            } else {
-                count = parseInt(count);
-            }
-            
-            if (lastVisit !== today) {
-                count = count + 1;
-                localStorage.setItem('visitorCount', count);
-                localStorage.setItem('lastVisitDate', today);
-            }
-            
-            document.getElementById('visitorCount').textContent = count;
+            fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.value) {
+                        document.getElementById('visitorCount').textContent = data.value;
+                    } else {
+                        document.getElementById('visitorCount').textContent = '無法載入';
+                    }
+                })
+                .catch(error => {
+                    console.error('更新訪客計數失敗:', error);
+                    document.getElementById('visitorCount').textContent = '無法載入';
+                });
         }
 
         updateVisitorCount();
