@@ -16,9 +16,11 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             color: white;
+            position: relative;
         }
 
         .game-container {
@@ -653,7 +655,7 @@
         generateQuestion();
     </script>
 
-    <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
+    <div style="position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); color: rgba(255, 255, 255, 0.7); font-size: 12px;">
         © 2025 tswnsyau@gmail.com
     </div>
     
